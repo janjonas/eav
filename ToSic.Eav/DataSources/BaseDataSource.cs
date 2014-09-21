@@ -20,7 +20,7 @@ namespace ToSic.Eav.DataSources
 		}
 
 		/// <summary>
-		/// Name of this data source - mainly to aid debugging
+		/// Name of this data source - mainly to aid debugging; is sometimes also used to identify things like cache-fragments
 		/// </summary>
 		public string Name { get { return GetType().Name; } }
 

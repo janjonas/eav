@@ -26,26 +26,41 @@ namespace ToSic.Eav.DataSources
 			_tokenReplace = new TokenReplace(Sources);
 		}
 
+        /// <summary>
+        /// Go through an entire dictionary of configurations and resolve them
+        /// </summary>
+        /// <param name="configList"></param>
 		public void LoadConfiguration(IDictionary<string, string> configList )
 		{
 			foreach (var o in configList.ToList())
-			{
-				if (!_tokenReplace.ContainsTokens(o.Value))
-					continue;
-
-				var newValue = _tokenReplace.ReplaceTokens(o.Value);
-
-				// do recursion 3 times
-				for (var i = 0; i < 3; i++)
-				{
-					if (_tokenReplace.ContainsTokens(newValue))
-						newValue = _tokenReplace.ReplaceTokens(newValue);
-					else
-						break;
-				}
-
-				configList[o.Key] = newValue;
-			}
+                configList[o.Key] = LoadConfiguration(o.Value);
 		}
+
+        /// <summary>
+        /// Loads the configuration for one string. This string could be
+        /// * a single token like "[Module:ModuleId]"
+        /// * a mix or multiple like "Hello [Profile:FirstName] welcome to [Portal:PortalName]"
+        /// * fallback tokens like "Hello [Profile:FirstName||anonymous user]"
+        /// * recursive fallback token like "Hello [Profile:Firstname||[App:DefaultName]]"
+        /// </summary>
+        /// <param name="singleValue"></param>
+        /// <returns></returns>
+	    public string LoadConfiguration(string singleValue, int recursions = 3)
+	    {
+	        if (!_tokenReplace.ContainsTokens(singleValue))
+	            return singleValue;
+
+	        var newValue = _tokenReplace.ReplaceTokens(singleValue);
+
+	        // do recursion 3 more times for tokens in tokens if nothing found
+	        for (var i = 0; i < recursions; i++)
+	        {
+	            if (_tokenReplace.ContainsTokens(newValue))
+	                newValue = _tokenReplace.ReplaceTokens(newValue);
+	            else
+	                break;
+	        }
+	        return newValue;
+	    }
 	}
 }
